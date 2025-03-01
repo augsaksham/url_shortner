@@ -21,12 +21,10 @@ This document outlines the system design for a URL shortening service The servic
     *   FastAPI (Python)
     *   PostgreSQL (Database)
     *   Redis (Cache)
-    *   PyJWT (Authentication)
+    *   PyJose (Authentication)
     *   Uvicorn (ASGI Server)
-    *   Gunicorn (WSGI Server)
 *   **Infrastructure:**
     *   Docker (Containerization)
-    *   Cloud Provider (AWS, Google Cloud, Azure - Optional)
 
 ## 4. System Architecture
 
@@ -43,11 +41,9 @@ graph LR
 **Components:**
 
 *   **Client (Angular):** User interface for interacting with the service.
-*   **API Gateway (Optional):** Provides a single entry point for all API requests, handling authentication, rate limiting, etc.
 *   **FastAPI Backend:** Handles the core logic of the service.
 *   **Redis Cache:** Stores frequently accessed URL mappings for fast retrieval.
 *   **PostgreSQL Database:** Stores persistent data, such as user information, access statistics, and URL mappings.
-*   **Celery (Async Tasks):** Handles background tasks, such as expiring URLs and updating access counts.
 
 ## 5. Frontend Design (Angular)
 
@@ -93,7 +89,7 @@ graph LR
 
 ```mermaid
 graph LR
-    API[FastAPI Application] --> Auth[Authentication PyJWT]
+    API[FastAPI Application] --> Auth[Authentication PyJos]
     API --> ShortenURL[Shorten URL Endpoint]
     API --> RedirectURL[Redirect URL Endpoint]
     API --> GetURLInfo[Get URL Info Endpoint]
@@ -112,7 +108,7 @@ graph LR
 **Modules:**
 
 *   **FastAPI Application:** The main application instance.
-*   **Authentication (PyJWT):** Handles user authentication and authorization.
+*   **Authentication (PyJos):** Handles user authentication and authorization.
 *   **Shorten URL Endpoint:** API endpoint for shortening URLs.
 *   **Redirect URL Endpoint:** API endpoint for redirecting short URLs to original URLs.
 *   **Get URL Info Endpoint:** API endpoint for retrieving information about a short URL.
@@ -170,7 +166,7 @@ Redis will be used as a cache for frequently accessed URL mappings and access co
 *   `expires_at:{short_url}`: Stores the expiration timestamp for a short URL. (e.g., `expires_at:xyz123` -> `2024-12-31T23:59:59`)
 *   `next_url_id`:  A counter to generate unique URL IDs.
 
-## 9. Authentication (PyJWT)
+## 9. Authentication (PyJos)
 
 *   Users will register with a username and password.
 *   The backend will hash the password using a secure hashing algorithm (e.g., bcrypt).
