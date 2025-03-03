@@ -206,35 +206,6 @@ This project is a URL shortener API built with FastAPI, SQLAlchemy, and Redis. I
     API-->>Client: URL List Response
     ```
 
-### 3. Health Check
-
-#### 3.1 Health Check
-
--   **Endpoint**: `/health`
--   **Method**: GET
--   **Description**: Checks the health status of the API, including the Redis and database connections.
--   **Response Body**:
-
-    ```json
-    {
-    "status": "healthy",
-    "redis": "connected",
-    "database": "connected"
-    }
-    ```
-
--   **Mermaid Diagram**:
-
-    ```mermaid
-    sequenceDiagram
-    Client->>API: GET /health
-    API->>Redis: Ping Redis
-    Redis-->>API: PONG
-    API->>Database: SELECT 1
-    Database-->>API: 1
-    API-->>Client: Health Status Response
-    ```
-
 ## Error Handling
 
 The API returns standard HTTP status codes for errors:
