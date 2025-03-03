@@ -48,23 +48,3 @@ async def redirect_to_url(
 @app.get("/")
 def read_root():
     return {"message": "Welcome to URL Shortener API"}
-
-# Health check endpoint
-@app.get("/health")
-async def health_check(redis_client: redis.Redis = Depends(get_redis_connection)):
-    # Check Redis connection
-    redis_status = await redis_client.ping()
-    
-    # Check database connection
-    db_status = True
-    try:
-        db = next(get_db())
-        db.execute("SELECT 1")
-    except Exception:
-        db_status = False
-    
-    return {
-        "status": "healthy" if redis_status and db_status else "unhealthy",
-        "redis": "connected" if redis_status else "disconnected",
-        "database": "connected" if db_status else "disconnected"
-    }

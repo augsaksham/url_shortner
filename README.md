@@ -250,5 +250,10 @@ The API returns standard HTTP status codes for errors:
 1.  Clone the repository.
 2.  Install requirements.
 3.  Run the application using Docker.
-4.  For local hosting run : `uvicorn app.main:app --reload`
-5.  Access the API documentation at `/api/v1/openapi.json`.
+4.  Start postgres and redis : 
+    ```python
+    sudo systemctl start postgresql
+    sudo systemctl start redis
+    ```
+5.  For local hosting run : `uvicorn app.main:app --reload`
+6.  Access the API documentation at `/api/v1/openapi.json`.
