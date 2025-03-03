@@ -40,18 +40,14 @@ async def create_short_url(
     # Generate a unique short code
     while True:
         short_code = generate_short_code()
-        # Check if the short code already exists in the database
         exists_in_db = db.query(models.URL).filter(models.URL.short_code == short_code).first()
-        # Check if the short code already exists in Redis
         exists_in_redis = await redis_client.exists(f"short_url:{short_code}")
         
         if not exists_in_db and not exists_in_redis:
             break
     
-    # Calculate expiration date
     expires_at = datetime.utcnow() + timedelta(days=url_data.expires_in_days)
     
-    # Create a new URL record in the database
     db_url = models.URL(
         original_url=url_data.original_url,
         short_code=short_code,
@@ -62,13 +58,10 @@ async def create_short_url(
     db.add(db_url)
     db.commit()
     db.refresh(db_url)
-    
-    # Store the URL mapping in Redis
-    # Set TTL to match expiration date (in seconds)
+
     ttl = int((expires_at - datetime.utcnow()).total_seconds())
     await redis_client.set(f"short_url:{short_code}", url_data.original_url, ex=ttl)
     
-    # Create the full short URL
     short_url = f"{settings.BASE_URL}/{short_code}"
     
     return schemas.URLResponse(
@@ -79,9 +72,7 @@ async def create_short_url(
         access_count=db_url.access_count
     )
 
-# Get the original URL from a short code
 async def get_original_url(db: Session, redis_client: redis.Redis, short_code: str):
-    # Try to get the URL from Redis first
     original_url = await redis_client.get(f"short_url:{short_code}")
     
     if not original_url:
@@ -103,20 +94,17 @@ async def get_original_url(db: Session, redis_client: redis.Redis, short_code: s
         ttl = int((db_url.expires_at - datetime.utcnow()).total_seconds())
         await redis_client.set(f"short_url:{short_code}", original_url, ex=ttl)
     
-    # Increment access count in database asynchronously
     db_url = db.query(models.URL).filter(models.URL.short_code == short_code).first()
     if db_url:
         db_url.access_count += 1
         db.commit()
     
-    # Increment access count in Redis
     await redis_client.incr(f"access_count:{short_code}")
     
     return original_url
 
 # Get URL information
 async def get_url_info(db: Session, redis_client: redis.Redis, short_code: str, user_id: int):
-    # Get URL from database
     db_url = db.query(models.URL).filter(
         models.URL.short_code == short_code,
         models.URL.user_id == user_id
@@ -131,10 +119,8 @@ async def get_url_info(db: Session, redis_client: redis.Redis, short_code: str, 
     # Check if access count is in Redis
     access_count = await redis_client.get(f"access_count:{short_code}")
     if access_count:
-        # Use Redis count if available (more up-to-date)
         db_url.access_count = int(access_count)
     
-    # Create the full short URL
     short_url = f"{settings.BASE_URL}/{short_code}"
     
     return schemas.URLInfo(
@@ -149,7 +135,6 @@ async def get_url_info(db: Session, redis_client: redis.Redis, short_code: str, 
 # Get all URLs for a user
 def get_user_urls(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     db_urls = db.query(models.URL).filter(models.URL.user_id == user_id).offset(skip).limit(limit).all()
-    # Convert db_urls to schemas.URLInfo
     url_infos = []
     for db_url in db_urls:
         short_url = f"{settings.BASE_URL}/{db_url.short_code}"

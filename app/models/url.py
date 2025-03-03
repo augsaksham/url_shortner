@@ -16,10 +16,8 @@ class URL(Base):
 
     user = relationship("User", back_populates="urls")
 
-# Create indexes for performance
 Index("idx_short_code", URL.short_code)
 Index("idx_original_url", URL.original_url)
 
-# Add back-reference to User model
 from .user import User
 User.urls = relationship("URL", back_populates="user")
